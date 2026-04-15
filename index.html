@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Shadow Leap - An epic action-adventure game featuring dynamic combat and stunning visuals. Play now!">
+    <title>Shadow Leap — Epic Action Adventure Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loader-content">
+            <div class="loader-ring">
+                <div class="ring-segment"></div>
+                <div class="ring-segment"></div>
+                <div class="ring-segment"></div>
+            </div>
+            <h2 class="loader-title">SHADOW LEAP</h2>
+            <div class="loader-bar-container">
+                <div class="loader-bar" id="loader-bar"></div>
+            </div>
+            <p class="loader-text" id="loader-text">Initializing...</p>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="main-nav">
+        <div class="nav-inner">
+            <div class="nav-logo">
+                <span class="logo-icon">⚔</span>
+                <span class="logo-text">SHADOW LEAP</span>
+            </div>
+            <div class="nav-links">
+                <a href="#hero" class="nav-link active" id="nav-hero">Home</a>
+                <a href="#features" class="nav-link" id="nav-features">Features</a>
+                <a href="#gameplay" class="nav-link" id="nav-gameplay">Gameplay</a>
+                <a href="#cta" class="nav-link" id="nav-cta">Pre-Order</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section with 3D Character -->
+    <section id="hero">
+        <div id="three-canvas-container">
+            <canvas id="three-canvas"></canvas>
+        </div>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <div class="hero-badge">NEW RELEASE — 2026</div>
+            <h1 class="hero-title">
+                <span class="title-line">SHADOW</span>
+                <span class="title-line accent">LEAP</span>
+            </h1>
+            <p class="hero-subtitle">Defy gravity. Master the shadows. Become legend.</p>
+            <div class="hero-actions">
+                <button class="btn btn-primary" id="btn-play-now">
+                    <span class="btn-icon">▶</span> Watch Trailer
+                </button>
+                <button class="btn btn-secondary" id="btn-pre-order">Pre-Order Now</button>
+            </div>
+            <div class="hero-controls-hint">
+                <div class="control-key">
+                    <span class="key">W</span>
+                    <span class="key">A</span>
+                    <span class="key">S</span>
+                    <span class="key">D</span>
+                </div>
+                <span class="control-text">Move the character</span>
+            </div>
+        </div>
+        <div class="hero-particles" id="hero-particles"></div>
+        <div class="scroll-indicator" id="scroll-indicator">
+            <span class="scroll-text">Scroll Down</span>
+            <div class="scroll-arrow"></div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-tag">WHY PLAY</span>
+                <h2 class="section-title">Game Features</h2>
+                <p class="section-desc">Experience next-gen gameplay with cutting-edge technology and breathtaking visuals.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card" id="feature-combat">
+                    <div class="feature-icon">⚡</div>
+                    <h3 class="feature-title">Dynamic Combat</h3>
+                    <p class="feature-desc">Fluid combo system with over 200 unique moves. Chain attacks, dodge, and counter in real-time.</p>
+                    <div class="feature-glow"></div>
+                </div>
+                <div class="feature-card" id="feature-world">
+                    <div class="feature-icon">🌍</div>
+                    <h3 class="feature-title">Open World</h3>
+                    <p class="feature-desc">Explore a vast, handcrafted world spanning 50+ hours of content across diverse biomes.</p>
+                    <div class="feature-glow"></div>
+                </div>
+                <div class="feature-card" id="feature-story">
+                    <div class="feature-icon">📖</div>
+                    <h3 class="feature-title">Epic Storyline</h3>
+                    <p class="feature-desc">Branching narrative with meaningful choices that shape the world and your character's destiny.</p>
+                    <div class="feature-glow"></div>
+                </div>
+                <div class="feature-card" id="feature-multiplayer">
+                    <div class="feature-icon">👥</div>
+                    <h3 class="feature-title">Co-op Multiplayer</h3>
+                    <p class="feature-desc">Team up with friends in seamless drop-in co-op. Conquer raids and PvP arenas together.</p>
+                    <div class="feature-glow"></div>
+                </div>
+                <div class="feature-card" id="feature-graphics">
+                    <div class="feature-icon">🎨</div>
+                    <h3 class="feature-title">Stunning Visuals</h3>
+                    <p class="feature-desc">Powered by next-gen ray tracing with cinematic lighting and photorealistic environments.</p>
+                    <div class="feature-glow"></div>
+                </div>
+                <div class="feature-card" id="feature-customize">
+                    <div class="feature-icon">🛡️</div>
+                    <h3 class="feature-title">Deep Customization</h3>
+                    <p class="feature-desc">Thousands of gear combinations, skill trees, and cosmetic options to build your unique hero.</p>
+                    <div class="feature-glow"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gameplay Stats Section -->
+    <section id="gameplay">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-tag">BY THE NUMBERS</span>
+                <h2 class="section-title">Gameplay Stats</h2>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card" id="stat-hours">
+                    <div class="stat-number" data-target="200">0</div>
+                    <div class="stat-suffix">+</div>
+                    <div class="stat-label">Hours of Content</div>
+                </div>
+                <div class="stat-card" id="stat-quests">
+                    <div class="stat-number" data-target="500">0</div>
+                    <div class="stat-suffix">+</div>
+                    <div class="stat-label">Unique Quests</div>
+                </div>
+                <div class="stat-card" id="stat-weapons">
+                    <div class="stat-number" data-target="150">0</div>
+                    <div class="stat-suffix">+</div>
+                    <div class="stat-label">Weapons & Abilities</div>
+                </div>
+                <div class="stat-card" id="stat-worlds">
+                    <div class="stat-number" data-target="12">0</div>
+                    <div class="stat-suffix"></div>
+                    <div class="stat-label">Unique Worlds</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section id="cta">
+        <div class="section-container">
+            <div class="cta-content">
+                <h2 class="cta-title">Ready to <span class="accent">Leap</span>?</h2>
+                <p class="cta-desc">Join millions of players. Pre-order now and get exclusive launch day bonuses including the Shadow Armor Set and bonus XP.</p>
+                <div class="cta-actions">
+                    <button class="btn btn-primary btn-large" id="btn-preorder-main">
+                        Pre-Order — $59.99
+                    </button>
+                    <button class="btn btn-outline btn-large" id="btn-wishlist">
+                        Add to Wishlist
+                    </button>
+                </div>
+                <div class="cta-platforms">
+                    <span class="platform-label">Available on:</span>
+                    <div class="platform-icons">
+                        <span class="platform" id="platform-pc">🖥️ PC</span>
+                        <span class="platform" id="platform-ps5">🎮 PS5</span>
+                        <span class="platform" id="platform-xbox">🎮 Xbox</span>
+                        <span class="platform" id="platform-switch">🕹️ Switch</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="main-footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <span class="logo-icon">⚔</span>
+                <span class="logo-text">SHADOW LEAP</span>
+            </div>
+            <p class="footer-copy">© 2026 Shadow Leap Studios. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="#" id="footer-privacy">Privacy</a>
+                <a href="#" id="footer-terms">Terms</a>
+                <a href="#" id="footer-support">Support</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Three.js & FBXLoader -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.162.0/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module" src="main.js"></script>
+</body>
+</html>
