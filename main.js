@@ -5,6 +5,12 @@
 import * as THREE from 'three';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 
+// ---- Asset Paths ----
+const ASSET_BASE_URL = './';
+const MODEL_URL = `${ASSET_BASE_URL}Jump.fbx`;
+const TEXTURE_URLS = [];
+const ENABLE_TEXTURE_CHECKS = true;
+
 // ---- Globals ----
 let scene, camera, renderer, mixer, character, clock;
 let animationAction = null;
@@ -14,12 +20,14 @@ const characterRotationSpeed = 5;
 let targetRotation = 0;
 let isLoaded = false;
 const CHARACTER_TARGET_HEIGHT = 1.8;
+const FORCE_READABLE_CHARACTER_MATERIAL = false;
 
 // ---- DOM References ----
 const canvas = document.getElementById('three-canvas');
 const loadingScreen = document.getElementById('loading-screen');
 const loaderBar = document.getElementById('loader-bar');
 const loaderText = document.getElementById('loader-text');
+let debugPanel = null;
 
 // ---- Initialize Three.js ----
 function initThree() {
@@ -190,9 +198,12 @@ function setupGround() {
 function loadCharacter() {
     updateLoader(10, 'Loading character model...');
 
-    const loader = new FBXLoader();
+    const manager = new THREE.LoadingManager();
+    manager.setURLModifier((url) => `${ASSET_BASE_URL}${url}`.replace(/\/\.[/\\]/g, './'));
+
+    const loader = new FBXLoader(manager);
     loader.load(
-        'Jump.fbx',
+        MODEL_URL,
         (object) => {
             character = object;
             character.scale.setScalar(1);
@@ -200,6 +211,7 @@ function loadCharacter() {
 
             // Normalize imported FBX so it is always visible regardless of source units/pivot.
             fitCharacterToScene(character);
+            optimizeCharacterModel(character);
 
             // Setup materials and shadows
             character.traverse((child) => {
@@ -210,11 +222,9 @@ function loadCharacter() {
                     if (child.material) {
                         const materials = Array.isArray(child.material) ? child.material : [child.material];
                         materials.forEach((mat, index) => {
-                            const tunedMat = tuneMaterialForVisibility(mat, child);
-                            if ('metalness' in tunedMat) tunedMat.metalness = 0.15;
-                            if ('roughness' in tunedMat) tunedMat.roughness = 0.7;
-                            if ('envMapIntensity' in tunedMat) tunedMat.envMapIntensity = 0.6;
-                            if ('emissiveIntensity' in tunedMat) tunedMat.emissiveIntensity = 0.08;
+                            const tunedMat = FORCE_READABLE_CHARACTER_MATERIAL
+                                ? createReadableCharacterMaterial(mat, child)
+                                : cloneOriginalCharacterMaterial(mat, child);
                             tunedMat.needsUpdate = true;
                             materials[index] = tunedMat;
                         });
@@ -224,6 +234,8 @@ function loadCharacter() {
             });
 
             scene.add(character);
+            reportCharacterDebug(character);
+            validateTextureAvailability();
 
             // Setup animation
             if (object.animations && object.animations.length > 0) {
@@ -255,6 +267,40 @@ function loadCharacter() {
     );
 }
 
+function optimizeCharacterModel(model) {
+    model.traverse((child) => {
+        if (!child.isMesh) return;
+
+        child.frustumCulled = true;
+        if (child.geometry) {
+            child.geometry.computeBoundingBox();
+            child.geometry.computeBoundingSphere();
+        }
+    });
+}
+
+function validateTextureAvailability() {
+    if (!ENABLE_TEXTURE_CHECKS || TEXTURE_URLS.length === 0) {
+        return;
+    }
+
+    const textureLoader = new THREE.TextureLoader();
+    textureLoader.setCrossOrigin('anonymous');
+
+    TEXTURE_URLS.forEach((url) => {
+        textureLoader.load(
+            `${ASSET_BASE_URL}${url}`,
+            () => {
+                console.log(`Texture loaded: ${url}`);
+            },
+            undefined,
+            () => {
+                console.warn(`Texture missing or blocked by CORS: ${url}`);
+            }
+        );
+    });
+}
+
 function fitCharacterToScene(model) {
     const box = new THREE.Box3().setFromObject(model);
     const size = new THREE.Vector3();
@@ -275,35 +321,80 @@ function fitCharacterToScene(model) {
     model.position.y -= scaledBox.min.y;
 }
 
-function tuneMaterialForVisibility(material, mesh) {
-    let tuned = material;
+function reportCharacterDebug(model) {
+    const meshEntries = [];
+    let meshCount = 0;
 
-    // FBX files often ship with unlit/basic materials that look black under tone mapping.
-    if (material && material.isMeshBasicMaterial) {
-        tuned = new THREE.MeshStandardMaterial({
-            color: material.color ? material.color.clone() : new THREE.Color(0xc6d0e6),
-            map: material.map || null,
-            transparent: Boolean(material.transparent),
-            opacity: material.opacity ?? 1,
-            side: material.side ?? THREE.FrontSide,
-            skinning: Boolean(mesh.isSkinnedMesh),
+    model.traverse((child) => {
+        if (!child.isMesh) return;
+
+        meshCount += 1;
+        const materials = Array.isArray(child.material) ? child.material : [child.material];
+        materials.forEach((material, index) => {
+            const color = material?.color
+                ? `rgb(${Math.round(material.color.r * 255)}, ${Math.round(material.color.g * 255)}, ${Math.round(material.color.b * 255)})`
+                : 'none';
+            const emissive = material?.emissive
+                ? `rgb(${Math.round(material.emissive.r * 255)}, ${Math.round(material.emissive.g * 255)}, ${Math.round(material.emissive.b * 255)})`
+                : 'none';
+            const mapSource = material?.map?.image?.currentSrc || material?.map?.image?.src || 'none';
+            const emissiveMapSource = material?.emissiveMap?.image?.currentSrc || material?.emissiveMap?.image?.src || 'none';
+            meshEntries.push(
+                [
+                    `${child.name || 'mesh'}[${index}]`,
+                    `type=${material?.type || 'unknown'}`,
+                    `color=${color}`,
+                    `emissive=${emissive}`,
+                    `map=${mapSource}`,
+                    `emissiveMap=${emissiveMapSource}`,
+                    `opacity=${material?.opacity ?? 'n/a'}`,
+                    `transparent=${Boolean(material?.transparent)}`,
+                    `vertexColors=${Boolean(material?.vertexColors)}`,
+                    `skinning=${Boolean(material?.skinning)}`,
+                    `side=${material?.side ?? 'n/a'}`,
+                ].join(' | ')
+            );
         });
+    });
+
+    console.group('Shadow Leap FBX Debug');
+    console.log('Mesh count:', meshCount);
+    console.table(meshEntries.map((entry) => ({ entry })));
+    console.groupEnd();
+
+    if (!debugPanel) {
+        debugPanel = document.createElement('div');
+        debugPanel.id = 'debug-panel';
+        document.body.appendChild(debugPanel);
     }
 
-    if (tuned && 'map' in tuned && tuned.map) {
-        tuned.map.colorSpace = THREE.SRGBColorSpace;
+    debugPanel.textContent = [
+        `FBX mesh count: ${meshCount}`,
+        ...meshEntries.slice(0, 6),
+        meshEntries.length > 6 ? `... +${meshEntries.length - 6} more` : '',
+    ]
+        .filter(Boolean)
+        .join('\n');
+}
+
+function createReadableCharacterMaterial(sourceMaterial, mesh) {
+    return cloneOriginalCharacterMaterial(sourceMaterial, mesh);
+}
+
+function cloneOriginalCharacterMaterial(sourceMaterial, mesh) {
+    if (!sourceMaterial) {
+        return new THREE.MeshStandardMaterial({ color: 0xffffff });
     }
 
-    if (tuned && 'color' in tuned && tuned.color) {
-        const color = tuned.color;
-        const darkest = Math.max(color.r, color.g, color.b) < 0.08;
-        if (darkest) {
-            // Neutral bright tint keeps character readable if source model color is pure black.
-            color.set(0xc6d0e6);
-        }
+    const cloned = sourceMaterial.clone();
+    if (cloned.map) {
+        cloned.map.colorSpace = THREE.SRGBColorSpace;
     }
-
-    return tuned;
+    if (cloned.emissiveMap) {
+        cloned.emissiveMap.colorSpace = THREE.SRGBColorSpace;
+    }
+    cloned.skinning = Boolean(mesh.isSkinnedMesh);
+    return cloned;
 }
 
 function updateLoader(percent, text) {
